@@ -1,0 +1,29 @@
+{
+  "user": {
+    "id": 1,
+    "fio": "Old name",
+    "phone": "one",
+    "phone_prev": "",
+    "created_at": "2023-01-01 00:00:00",
+    "updated_at": "2023-01-01 00:00:00"
+  },
+  "realty": {
+    "id": 1,
+    "address": "Test street",
+    "square": 42,
+    "type": "flat",
+    "number": "1",
+    "rooms": 2,
+    "floor": 1,
+    "porch": 1,
+    "created_at": "2023-01-01 00:00:00"
+  },
+  "tariff": {
+    "id": 1,
+    "name": "Tariff",
+    "price_day_kwph": 500,
+    "price_night_kwph": 250,
+    "valid_from": "2023-11-01 00:00:00",
+    "valid_to": "2025-11-01 00:00:00"
+  }
+}
