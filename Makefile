@@ -1,27 +1,36 @@
-CONTAINER_ENGINE ?= docker
-COMPOSE ?= $(CONTAINER_ENGINE) compose --env-file .env.local
-.PHONY: run rund services stop clean gen load setup teardown test format
+.PHONY: run rund services stop clean
 .DEFAULT_GOAL = run
 
+# Runs all services in detached mode.
 run:
-	$(COMPOSE) up -d --build --wait --wait-timeout 120
+	docker compose --env-file .env.local up -d --build
+
+# Runs all services without detached mode (for debugging).
 rund:
-	$(COMPOSE) up --build
+	docker compose --env-file .env.local up --build
+
+# Shows all service statuses.
 services:
-	$(COMPOSE) ps
+	docker compose ps
+
+# Stops all running services.
 stop:
-	$(COMPOSE) down
+	docker compose down
+
+# Cleans up all resources including volumes.
 clean:
-	$(COMPOSE) down -v
+	docker compose down -v
+
+.PHONY: gen load setup teardown
+
 gen:
-	$(COMPOSE) run --build --rm --no-deps app gen
+	docker compose --env-file .env.local run --build --rm --no-deps app gen
+
 load:
-	$(COMPOSE) run --rm --no-deps app load
+	docker compose --env-file .env.local run --rm --no-deps app load
+
 setup:
-	$(COMPOSE) run --rm --no-deps app setup
+	docker compose --env-file .env.local run --rm --no-deps app setup
+
 teardown:
-	$(COMPOSE) run --rm --no-deps app teardown
-test:
-	./gradlew check
-format:
-	./gradlew ktlintFormat
+	docker compose --env-file .env.local run --rm --no-deps app teardown

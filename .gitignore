@@ -1,3 +1,6 @@
+# ============================================
+# Operating System
+# ============================================
 .DS_Store
 .DS_Store?
 ._*
@@ -8,24 +11,51 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# ============================================
+# Editor/IDE
+# ============================================
 .idea/
 .vscode/
 .obsidian/
 *.sublime-project
 *.sublime-workspace
+
+# ============================================
+# Environment files
+# ============================================
 .env
 .env.production
 .env.development
+# .env.local - НЕ игнорируем! Должен быть в git
+
+# ============================================
+# Temporary files
+# ============================================
 *.tmp
 *.temp
 *.log
 tmp/
 logs/
+
+# ============================================
+# Docker
+# ============================================
 docker-compose.override.yml
+
+# ============================================
+# Harness
+# ============================================
 .clade/
 .codex/
 .opencode/
 .gigacode/
+
+# ============================================
+# Language-specific
+# ============================================
+
+# Go
 *.exe
 *.exe~
 *.dll
@@ -36,6 +66,8 @@ docker-compose.override.yml
 go.work
 go.work.sum
 vendor/
+
+# Java
 *.class
 *.jar
 *.war
@@ -43,21 +75,30 @@ vendor/
 target/
 .gradle/
 build/
+
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
 .Python
 venv/
 env/
 .venv/
+
+# Node.js
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .npm
 .eslintcache
+
+# PHP
+vendor/
 composer.phar
 composer.lock
+
 .tooling/
 .kotlin/
 data/

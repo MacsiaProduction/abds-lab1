@@ -15,17 +15,16 @@ make teardown
 make stop
 ```
 
-Для Podman можно выбрать движок без изменения Docker-настроек системы:
+Для существующей VM Podman используйте Compose напрямую:
 
 ```sh
-export CONTAINER_ENGINE='podman --connection podman-machine-default-root'
-make run
-make setup
+podman --connection podman-machine-default-root compose --env-file .env.local up -d --build --wait
+podman --connection podman-machine-default-root compose --env-file .env.local run --rm --no-deps app setup
 ```
 
-Путь и имя подключения должны соответствовать вашей уже существующей VM; Makefile не создаёт и не запускает новые VM. Без этой переменной используется Docker, как в CI курса.
+Имя подключения должно соответствовать вашей VM. Makefile использует Docker, как в шаблоне курса.
 
-`make run` собирает приложение, запускает сервисы и ожидает готовности ClickHouse. `make setup` создаёт схему, генерирует CSV и загружает их пакетами по 100 000 строк. `make gen` работает без запущенной базы. `make load` требует созданной пустой схемы; после частичной или полной загрузки нужно явно выполнить `make teardown && make setup`. Повторный load отказывается писать в непустую базу, потому что VersionedCollapsingMergeTree не обеспечивает идемпотентность повторного CSV.
+`make run` собирает приложение и запускает сервисы. Приложение зависит от готовности ClickHouse. `make setup` создаёт схему, генерирует CSV и загружает их пакетами по 100 000 строк. `make gen` работает без запущенной базы. `make load` требует созданной пустой схемы; после частичной или полной загрузки нужно явно выполнить `make teardown && make setup`. Повторный load отказывается писать в непустую базу, потому что VersionedCollapsingMergeTree не обеспечивает идемпотентность повторного CSV.
 
 **`make teardown` удаляет всю базу, указанную в CLICKHOUSE_DATABASE.** Используйте только отдельную учебную базу. Сгенерированные CSV можно оставить для проверки; gen перезаписывает их детерминированно. `data/` и `volume/` исключены из Git и Docker build context.
 
