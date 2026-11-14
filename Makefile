@@ -20,3 +20,17 @@ stop:
 # Cleans up all resources including volumes.
 clean:
 	docker compose down -v
+
+.PHONY: gen load setup teardown
+
+gen:
+	docker compose --env-file .env.local run --build --rm --no-deps app gen
+
+load:
+	docker compose --env-file .env.local run --rm --no-deps app load
+
+setup:
+	docker compose --env-file .env.local run --rm --no-deps app setup
+
+teardown:
+	docker compose --env-file .env.local run --rm --no-deps app teardown

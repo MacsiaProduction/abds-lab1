@@ -1,0 +1,10 @@
+.git
+.tooling
+.gradle
+.kotlin
+build
+data
+volume
+.env.local
+*.log
+.env

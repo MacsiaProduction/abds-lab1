@@ -1,0 +1,5 @@
+<clickhouse>
+    <http_port from_env="CLICKHOUSE_HTTP_PORT" />
+    <tcp_port from_env="CLICKHOUSE_PORT" />
+    <timezone from_env="TZ" />
+</clickhouse>
