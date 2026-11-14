@@ -15,7 +15,7 @@ ENV PATH=/opt/java/bin:$PATH
 
 FROM java AS build
 WORKDIR /source
-COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts gradle.lockfile settings-gradle.lockfile ./
+COPY gradlew settings.gradle.kts build.gradle.kts gradle.lockfile settings-gradle.lockfile ./
 COPY gradle/ gradle/
 COPY .editorconfig ./
 COPY src/ src/
