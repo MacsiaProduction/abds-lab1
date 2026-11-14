@@ -4,7 +4,7 @@ Kotlin/JVM-сервис без авторизации для учебной мо
 
 ## Запуск
 
-Поддерживаются Linux и macOS. Нужны Docker или существующая VM Podman, Compose и доступ к официальным архивам Oracle JDK и Maven Central. Системные Kotlin и Gradle для запуска через Docker не нужны. Настройки и публичные учебные учётные данные находятся в `.env.local`; файл включается в репозиторий. Ссылка `.env` на `.env.local` позволяет запускать Compose без `--env-file`. Секреты в него добавлять нельзя.
+Поддерживаются Linux и macOS. Нужны Docker или существующая VM Podman, Compose и доступ к реестру контейнеров и Maven Central. Системные Kotlin и Gradle для запуска через Docker не нужны. Настройки и публичные учебные учётные данные находятся в `.env.local`; файл включается в репозиторий. Ссылка `.env` на `.env.local` позволяет запускать Compose без `--env-file`. Секреты в него добавлять нельзя.
 
 ```sh
 make run
@@ -32,7 +32,7 @@ podman --connection podman-machine-default-root compose --env-file .env.local ru
 
 ## Сборка и проверки без ClickHouse
 
-Нужен JDK 27. Gradle wrapper закреплён на 9.9.1 с SHA-256. Kotlin 2.4.21 выпускает байткод JVM 26; Java target согласован с ним. Дистрибутив запускается на JDK 27. Версии библиотек: `gradle/libs.versions.toml`, resolved-версии — `gradle.lockfile`, SHA-256 артефактов — `gradle/verification-metadata.xml`. Для SnakeYAML закреплена совместимая версия 4.0.1: новейшая 5.0.0 вызывает NoSuchMethodError при разборе YAML через Kaml 0.104.0. Это проверяемое исключение из выбора последних стабильных версий.
+Нужен JDK 27; контейнер использует Eclipse Temurin с образом, закреплённым digest в `.env.local`. Gradle wrapper закреплён на 9.9.1 с SHA-256. Kotlin 2.4.21 выпускает байткод JVM 26; Java target согласован с ним. Дистрибутив запускается на JDK 27. Версии библиотек: `gradle/libs.versions.toml`, resolved-версии — `gradle.lockfile`, SHA-256 артефактов — `gradle/verification-metadata.xml`. Для SnakeYAML закреплена совместимая версия 4.0.1: новейшая 5.0.0 вызывает NoSuchMethodError при разборе YAML через Kaml 0.104.0. Это проверяемое исключение из выбора последних стабильных версий.
 
 ```sh
 ./gradlew check installDist

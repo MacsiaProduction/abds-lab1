@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.ktlint)
     application
 }
 
@@ -14,7 +15,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_26
 }
 
-val ktlint = configurations.create("ktlint")
+ktlint { version.set(libs.versions.ktlint.get()) }
 
 dependencies {
     implementation(platform(libs.kotlin.bom))
@@ -45,21 +46,8 @@ dependencies {
     testImplementation(libs.assertj)
     testImplementation(libs.ktor.test)
     testRuntimeOnly(libs.junit.launcher)
-    ktlint(libs.ktlint)
 }
 
 application { mainClass.set("lab.MainKt") }
 tasks.test { useJUnitPlatform() }
 dependencyLocking { lockAllConfigurations() }
-
-tasks.register<JavaExec>("ktlintCheck") {
-    classpath = ktlint
-    mainClass.set("com.pinterest.ktlint.Main")
-    args("src/**/*.kt", "*.gradle.kts")
-}
-tasks.register<JavaExec>("ktlintFormat") {
-    classpath = ktlint
-    mainClass.set("com.pinterest.ktlint.Main")
-    args("--format", "src/**/*.kt", "*.gradle.kts")
-}
-tasks.check { dependsOn("ktlintCheck") }
