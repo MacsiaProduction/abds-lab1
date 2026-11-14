@@ -10,8 +10,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.*
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -27,7 +25,7 @@ private fun invalid(
     location: String = "field",
 ): Nothing = throw ApiError(HttpStatusCode.BadRequest, "invalid \"$field\" $location")
 
-private fun missing(): Nothing = throw ApiError(HttpStatusCode.NotFound, "Not found")
+private fun missing(): Nothing = throw EntityNotFound()
 
 private val timestampFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
@@ -118,6 +116,7 @@ fun Application.module(
 ) {
     install(ContentNegotiation) { json(lab.json) }
     install(StatusPages) {
+        exception<EntityNotFound> { call, _ -> call.respond(HttpStatusCode.NotFound, obj("message" to text("Not found"))) }
         exception<ApiError> { call, error -> call.respond(error.status, obj("message" to text(error.message))) }
         exception<Throwable> { call, error ->
             if (error is CancellationException) throw error
@@ -126,7 +125,7 @@ fun Application.module(
             call.respond(HttpStatusCode.InternalServerError, obj("message" to text("Internal server error")))
         }
     }
-    val writes = Mutex()
+    val service = MeteringService(store, clock)
 
     suspend fun requireRealty(id: ULong) {
         if (store.realty(id) == null) missing()
@@ -144,18 +143,7 @@ fun Application.module(
             if (body.isEmpty()) invalid("fio")
             val fio = if ("fio" in body) string(body["fio"], "fio") else null
             val phone = if ("phone" in body) string(body["phone"], "phone") else null
-            writes.withLock {
-                val old = store.user(id) ?: missing()
-                val next =
-                    old.changed(
-                        "fio" to text(fio ?: old.value("fio")),
-                        "phone" to text(phone ?: old.value("phone")),
-                        "phone_prev" to
-                            text(if (phone != null && phone != old.value("phone")) old.value("phone") else old.value("phone_prev")),
-                        "updated_at" to text(clock.after(old.value("updated_at"))),
-                    )
-                store.insert("dim_users", listOf(next))
-            }
+            service.updateUser(id, fio, phone)
             call.respond(HttpStatusCode.NoContent)
         }
         get("/realty/{id}") {
@@ -196,30 +184,7 @@ fun Application.module(
             val tariff = integer(body["tariff_id"], "tariff_id")
             val dayKw = integer(body["day_kw"], "day_kw", UInt.MAX_VALUE.toULong())
             val nightKw = integer(body["night_kw"], "night_kw", UInt.MAX_VALUE.toULong())
-            writes.withLock {
-                requireRealty(id)
-                if (!store.exists("dim_users", user) || !store.exists("dim_gauges", gauge) ||
-                    !store.exists("dim_tariffs", tariff)
-                ) {
-                    missing()
-                }
-                val old = store.readings(id, day, day).singleOrNull()
-                store.insert(
-                    "fact_meter_readings",
-                    listOf(
-                        obj(
-                            "realty_id" to number(id),
-                            "user_id" to number(user),
-                            "tariff_id" to number(tariff),
-                            "gauge_id" to number(gauge),
-                            "reading_date" to text(day),
-                            "day_kw" to number(dayKw),
-                            "night_kw" to number(nightKw),
-                            "created_at" to text(clock.after(old?.value("created_at"))),
-                        ),
-                    ),
-                )
-            }
+            service.recordReading(id, user, gauge, tariff, day, dayKw, nightKw)
             call.respond(HttpStatusCode.Created)
         }
         get("/realty/{id}/invoices") {
@@ -241,22 +206,7 @@ fun Application.module(
         post("/realty/{id}/gauges") {
             val id = call.id()
             val gauge = integer(call.body()["gauge_id"], "gauge_id")
-            writes.withLock {
-                requireRealty(id)
-                if (!store.exists("dim_gauges", gauge)) missing()
-                val old = store.binding(id)
-                val version = old?.id("version") ?: 0uL
-                check(version < ULong.MAX_VALUE) { "Gauge version exhausted" }
-                val next =
-                    obj(
-                        "gauge_id" to number(gauge),
-                        "realty_id" to number(id),
-                        "created_at" to text(clock.after(null)),
-                        "sign" to number(1L),
-                        "version" to number(version + 1uL),
-                    )
-                store.insert("fact_gauge_bindings", listOfNotNull(old?.changed("sign" to number(-1L)), next))
-            }
+            service.installGauge(id, gauge)
             call.respond(HttpStatusCode.Created)
         }
     }

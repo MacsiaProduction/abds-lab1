@@ -63,3 +63,4 @@ composer.lock
 data/
 volume/
 !gradle/wrapper/gradle-wrapper.jar
+!.env
